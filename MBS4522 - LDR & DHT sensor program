@@ -1,0 +1,53 @@
+#include <Arduino.h>
+#include <Adafruit_Sensor.h>
+#include <DHT.h>
+#include <DHT_U.h>
+
+#define DHTPIN D5
+#define DHTTYPE DHT22
+DHT dht(DHTPIN, DHTTYPE);
+
+void setup() {
+
+  Serial.begin(9600);
+  pinMode(A0,INPUT);
+  pinMode(D2, OUTPUT);
+}
+
+void loop() {
+  int var = analogRead(A0) / 4;
+  float h = dht.readHumidity();
+  float t = dht.readTemperature();
+
+  if(var >= 120 && var <= 150){
+    analogWrite(D2, 50);
+  }
+  else if (var >= 151 && var <= 180){
+    digitalWrite(D2, 70);
+  }
+  else if (var >= 181 && var <= 210){
+    digitalWrite(D2, 90);
+  }
+  else if (var >= 211 && var <= 240){
+    digitalWrite(D2, 150);
+  }
+  else if (var >= 240){
+    digitalWrite(D2, 255);
+  }
+  else{
+    digitalWrite(D2, LOW);
+  }
+
+  Serial.print("Brightness: "); 
+  Serial.println(var);
+  Serial.print("Humidity: "); 
+  Serial.print(h);
+  Serial.print(" %\t");
+  Serial.print("Temperature: "); 
+  Serial.print(t);
+  Serial.println(" *C ");
+  delay(1000);
+
+
+
+}
