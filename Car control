@@ -1,0 +1,176 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.IO.Ports;
+using System.Reflection;
+using System.Threading;
+
+namespace Control
+{
+    public partial class Form1 : Form
+    {
+
+        public SerialPort myport;
+
+        public Form1()
+        {
+            InitializeComponent();
+            myport = new SerialPort();
+            myport.BaudRate = 115200;
+            myport.PortName = "COM7";
+            myport.Open();
+        }
+
+ 
+        private void Form1_KeyDown(object sender, KeyEventArgs e)
+        {
+            
+
+            
+            switch (e.KeyCode)
+                
+            {
+                case Keys.W:
+                    { 
+                        myport.WriteLine("w");
+                        Label_Forward.ForeColor = Color.Red;
+
+                        break;
+                    }
+                case Keys.X :
+                    {
+                        myport.WriteLine("x");
+                        Label_Backward.ForeColor = Color.Red;
+                        break;
+                    }
+                case Keys.D:
+                    {
+                        myport.WriteLine("d");
+                        Label_right.ForeColor = Color.Red;
+                        break;
+                    }
+                case Keys.A:
+                    {
+                        myport.WriteLine("a");
+                        Label_left.ForeColor = Color.Red;
+                        break;
+                    }
+                case Keys.Q:
+                    {
+                        myport.WriteLine("q");
+                        Label_TopLeft.ForeColor = Color.Red;
+                        break;
+                    }
+                case Keys.E:
+                    {
+                        myport.WriteLine("e");
+                        Label_TopRight.ForeColor = Color.Red;
+                        break;
+                    }
+                case Keys.Z:
+                    {
+                        myport.WriteLine("z");
+                        Label_BottomLeft.ForeColor = Color.Red;
+                        break;
+                    }
+                case Keys.C:
+                    {
+                        myport.WriteLine("c");
+                        Label_BottomRight.ForeColor = Color.Red;
+                        break;
+                    }
+                case Keys.N:
+                    {
+                        myport.WriteLine("n");
+                        Label_RotateLeft.ForeColor = Color.Red;
+                        break;
+                    }
+                case Keys.M:
+                    {
+                        myport.WriteLine("m");
+                        Label_RotateRight.ForeColor = Color.Red;
+                        break;
+                    }
+            }
+        }
+
+        private void Form1_KeyUp(object sender, KeyEventArgs e)
+        {
+            switch (e.KeyCode)
+            {
+                case Keys.W:
+                    {
+                        myport.WriteLine("s");
+                        Label_Forward.ForeColor = Color.Black;        
+                        break;
+                    }
+                case Keys.X:
+                    {
+                        myport.WriteLine("s");
+                        Label_Backward.ForeColor = Color.Black;
+                        break;
+                    }
+                case Keys.D:
+                    {
+                        myport.WriteLine("s");
+                        Label_right.ForeColor = Color.Black;
+                        break;
+                    }
+                case Keys.A:
+                    {
+                        myport.WriteLine("s");
+                        Label_left.ForeColor = Color.Black;
+                        break;
+                    }
+                case Keys.Q:
+                    {
+                        myport.WriteLine("s");
+                        Label_TopLeft.ForeColor = Color.Black;
+                        break;
+                    }
+                case Keys.E:
+                    {
+                        myport.WriteLine("s");
+                        Label_TopRight.ForeColor = Color.Black;
+                        break;
+                    }
+                case Keys.Z:
+                    {
+                        myport.WriteLine("s");
+                        Label_BottomLeft.ForeColor = Color.Black;
+                        break;
+                    }
+                case Keys.C:
+                    {
+                        myport.WriteLine("s");
+                        Label_BottomRight.ForeColor = Color.Black;
+                        break;
+                    }
+                case Keys.N:
+                    {
+                        myport.WriteLine("s");
+                        Label_RotateLeft.ForeColor = Color.Black;
+                        break;
+                    }
+                case Keys.M:
+                    {
+                        myport.WriteLine("s");
+                        Label_RotateRight.ForeColor = Color.Black;
+                        break;
+                    }
+
+            }
+        }
+
+        private void label1_Click(object sender, EventArgs e)
+        {
+
+        }
+    }
+}
