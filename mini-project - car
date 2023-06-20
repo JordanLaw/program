@@ -1,0 +1,200 @@
+import cv2
+import numpy as np
+import serial
+import time
+
+ser = serial.Serial(
+    port = "/dev/ttyUSB0", 
+    baudrate = 115200, 
+    timeout = 1,
+    xonxoff= False,
+    rtscts= False,
+    dsrdtr= False,
+    write_timeout= 2)
+
+time.sleep(0.5)
+
+value = [0xff, 0x00, 0x00, 0x00, 0x00, 0x00]
+ser.write(serial.to_bytes(value))
+print(serial.to_bytes(value))
+
+def nil(self):
+    pass
+
+cap = cv2.VideoCapture(0)
+cap.set(3, 160)
+cap.set(4, 120)
+
+# yellow color
+YHueL = 145
+YHueH = 0
+YSatL = 255
+YSatH = 0
+YValL = 255
+YValH = 180
+
+# blue color
+BHueL = 255
+BHueH = 0
+BSatL = 140
+BSatH = 0
+BValL = 60
+BValH = 0   
+
+areaArray = []
+
+state1 = True
+state2 = False
+
+# cv2.namedWindow('TrackBar')
+# cv2.createTrackbar('HueLow', 'TrackBar', 0, 255, nil)
+# cv2.createTrackbar('HueHigh', 'TrackBar', 0, 255, nil)
+# cv2.createTrackbar('SatLow', 'TrackBar', 0, 255, nil)
+# cv2.createTrackbar('SatHigh', 'TrackBar', 0, 255, nil)
+# cv2.createTrackbar('ValLow', 'TrackBar', 0, 255, nil)
+# cv2.createTrackbar('ValHigh', 'TrackBar', 0, 255, nil)
+
+while True:
+    success, frameY = cap.read()
+    success, frameB = cap.read()
+
+    Ycrop_img = frameY[60:120, 0:130]
+    Bcrop_img = frameB[60:120, 0:130]
+    
+    # HueL = cv2.getTrackbarPos('HueLow', 'TrackBar')
+    # HueH = cv2.getTrackbarPos('HueHigh', 'TrackBar')
+    # SatL = cv2.getTrackbarPos('SatLow', 'TrackBar')
+    # SatH = cv2.getTrackbarPos('SatHigh', 'TrackBar')
+    # ValL = cv2.getTrackbarPos('ValLow', 'TrackBar')
+    # ValH = cv2.getTrackbarPos('ValHigh', 'TrackBar')
+
+    Ylow_b = np.uint8([YHueL, YSatL, YValL])
+    Yhigh_b = np.uint8([YHueH, YSatH, YValH])
+
+    Ymask = cv2.inRange(Ycrop_img, Yhigh_b, Ylow_b)
+
+    Ycontours, Yhierarchy = cv2.findContours(Ymask, 1, cv2.CHAIN_APPROX_NONE)
+    cv2.drawContours(Ycrop_img, Ycontours, -1, (0, 255, 0), 1)
+
+    Blow_b = np.uint8([BHueL, BSatL, BValL])
+    Bhigh_b = np.uint8([BHueH, BSatH, BValH])
+
+    Bmask = cv2.inRange(Bcrop_img, Bhigh_b, Blow_b)
+
+    Bcontours, Bhierarchy = cv2.findContours(Bmask, 1, cv2.CHAIN_APPROX_NONE)
+    cv2.drawContours(Bcrop_img, Bcontours, -1, (0, 255, 0), 1)
+
+    if state1 == True:
+        if len(Ycontours) > 0:
+            c = max(Ycontours, key=cv2.contourArea)
+            M = cv2.moments(c)
+
+            if M["m00"] != 0:
+                cx = int(M["m10"] / M["m00"])
+                cy = int(M["m01"] / M["m00"])
+                print("CX: " + str(cx) + " CY: " + str(cy))
+
+                cv2.line(Ycrop_img, (cx,0), (cx, 720), (255, 0, 0), 1)
+                cv2.line(Ycrop_img, (0, cy), (1280, cy), (255, 0, 0), 1)
+
+                if cx >= 100:
+                    value = [0xff, 0x00, 0x00, 0x50, 0x00, 0x00]
+                    ser.write(serial.to_bytes(value))
+                    print(serial.to_bytes(value))
+
+                if cx > 50 and cx < 100:
+                    value = [0xff, 0x00, 0x50, 0x00, 0x00, 0x00]
+                    ser.write(serial.to_bytes(value))
+                    print(serial.to_bytes(value))
+
+                if cx <= 50:
+                    # if cy >= 15:
+                        value = [0xff, 0x00, 0x00, 0xBF, 0x00, 0x00]
+                        ser.write(serial.to_bytes(value))
+                        print(serial.to_bytes(value))
+                    # else:
+                    #     value = [0xff, 0x00, 0x00, 0xBF, 0x00, 0x00]
+                    #     ser.write(serial.to_bytes(value))
+                    #     print(serial.to_bytes(value))
+
+
+        if len(Bcontours) > 1:
+            # for i, c in enumerate(Bcontours):
+            #     area = cv2.contourArea(c)
+            #     areaArray.append(area)
+
+            # sorteddata = sorted(zip(areaArray, Bcontours), key = lambda x: x[0], reverse= True)
+
+            # firstlargestcontour = sorteddata[0][1]
+            # secondlargestcontour = sorteddata[1][1]
+
+            # print("1st: " + str(firstlargestcontour))
+            # print("2rd: " + str(secondlargestcontour))
+
+            # break
+            Bc = max(Bcontours, key=cv2.contourArea)
+            Bx, By, Bw, Bh = cv2.boundingRect(Bc)
+            print(Bx, By, Bw, Bh)
+            if Bw >= 90:
+                value = [0xff, 0x00, 0x00, 0x00, 0x00, 0x00]
+                ser.write(serial.to_bytes(value))
+                print(serial.to_bytes(value))
+                time.sleep(5)
+                state1 = False
+                state2 = True
+
+    
+
+        # cv2.putText(Bcrop_img, str(Bw), (Bx, By - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0,0,255), 2)
+
+    if state2 == True:
+        if len(Ycontours) > 0:
+            c = max(Ycontours, key=cv2.contourArea)
+            M = cv2.moments(c)
+
+            if M["m00"] != 0:
+                cx = int(M["m10"] / M["m00"])
+                cy = int(M["m01"] / M["m00"])
+                print("CX: " + str(cx) + " CY: " + str(cy))
+
+                cv2.line(Ycrop_img, (cx,0), (cx, 720), (255, 0, 0), 1)
+                cv2.line(Ycrop_img, (0, cy), (1280, cy), (255, 0, 0), 1)
+
+                if cx >= 100:
+                    value = [0xff, 0x00, 0x00, 0x50, 0x00, 0x00]
+                    ser.write(serial.to_bytes(value))
+                    print(serial.to_bytes(value))
+
+                if cx > 50 and cx < 100:
+                    value = [0xff, 0x00, 0x50, 0x00, 0x00, 0x00]
+                    ser.write(serial.to_bytes(value))
+                    print(serial.to_bytes(value))
+
+                if cx <= 50:
+                    # if cy >= 15:
+                        value = [0xff, 0x00, 0x00, 0xBF, 0x00, 0x00]
+                        ser.write(serial.to_bytes(value))
+                        print(serial.to_bytes(value))
+                    # else:
+                    #     value = [0xff, 0x00, 0x00, 0xBF, 0x00, 0x00]
+                    #     ser.write(serial.to_bytes(value))
+                    #     print(serial.to_bytes(value))
+
+
+
+    cv2.imshow('Yimage - mask', Ymask)
+    cv2.imshow('Yimage', Ycrop_img)
+    cv2.imshow('Bimage - mask', Bmask)
+    cv2.imshow('Bimage', Bcrop_img)
+
+    # if cv2.waitKey (1) & 0xff == 'q':
+    #     value = [0xff, 0x00, 0x00, 0x00, 0x00, 0x00]
+    #     ser.write(serial.to_bytes(value))
+
+    if cv2.waitKey (1) & 0xff == 27:
+        break
+
+
+
+cap.release()
+cv2.destroyAllWindows
